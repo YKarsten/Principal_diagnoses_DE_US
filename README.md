@@ -2,7 +2,7 @@
 Comparative analysis of hospital discharges from germany and the US 2012 to 2021
 
 
-# References
+## References
 **German Principal diagnosis data:**
   - Statistisches Bundesamt Ergebnis 23131-0001
   - "Krankenhauspatienten: Deutschland, Jahre, Hauptdiagnose ICD-10 (1-3-Steller Hierarchie)"
@@ -23,3 +23,6 @@ Comparative analysis of hospital discharges from germany and the US 2012 to 2021
   - United States census bureau
   - "National demographic data 2010 to 2020"
   - [census.gov](https://www2.census.gov/programs-surveys/popest/tables/2010-2020/national/totals/)
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](license.txt) file for details.
