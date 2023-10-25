@@ -166,26 +166,25 @@ ORDER BY `2012` DESC;
 
 ------------
 -- DE data
-
 -- Diagnosis Rate per year among all diagnoses
 SELECT
     ICD_10,
     ICD_10_description,
     `2021` AS TotalCases2021,   
-    (`2021` / (SELECT SUM(`2021`) FROM diagnoses_DE))*100 AS Percentage2021,
-    (`2020` / (SELECT SUM(`2020`) FROM diagnoses_DE))*100 AS Percentage2020,
-    (`2019` / (SELECT SUM(`2019`) FROM diagnoses_DE))*100 AS Percentage2019,
-    (`2018` / (SELECT SUM(`2018`) FROM diagnoses_DE))*100 AS Percentage2018,
-    (`2017` / (SELECT SUM(`2017`) FROM diagnoses_DE))*100 AS Percentage2017,
-    (`2016` / (SELECT SUM(`2016`) FROM diagnoses_DE))*100 AS Percentage2016,
-    (`2015` / (SELECT SUM(`2015`) FROM diagnoses_DE))*100 AS Percentage2015,
-    (`2014` / (SELECT SUM(`2014`) FROM diagnoses_DE))*100 AS Percentage2014,
-    (`2013` / (SELECT SUM(`2013`) FROM diagnoses_DE))*100 AS Percentage2013,
-    (`2012` / (SELECT SUM(`2012`) FROM diagnoses_DE))*100 AS Percentage2012
+    (`2021` / (SELECT `2021` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate_2021,
+    (`2020` / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate_2020,
+    (`2019` / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate_2019,
+    (`2018` / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate_2018,
+    (`2017` / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate_2017,
+    (`2016` / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate_2016,
+    (`2015` / (SELECT `2015` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate_2015,
+    (`2014` / (SELECT `2014` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate_2014,
+    (`2013` / (SELECT `2013` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate_2013,
+    (`2012` / (SELECT `2012` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate_2012
 FROM
     diagnoses_DE
 WHERE ICD_10 NOT LIKE '%-%-%'
-ORDER BY Percentage2021 DESC;
+ORDER BY Diagnosis_Rate_2021 DESC;
 
 -- Proportion of Diagnoses per 100k people per year
 SELECT
@@ -229,7 +228,7 @@ ORDER BY Cases_per_100k_2021 DESC;
 
 
 
--- Select diagnosis that increased the most from 2012 to 2021 in relation to the population
+-- Select diagnoses that increased the most from 2012 to 2021 in relation to the population
 SELECT
     D.ICD_10,
     D.ICD_10_description,
@@ -262,28 +261,7 @@ JOIN population_DE AS P2016 ON P2016.Year = 2016
 WHERE D.2020 > D.2016 AND ICD_10 LIKE '%-%-%'
 ORDER BY Percentage_Increase_Relative_to_Population DESC;
 
--- Most prevalent diagnosis
-SELECT '2012' AS Year, ICD_10, ICD_10_description, 2012 AS DiagnosesCount
-FROM diagnoses_DE
-WHERE ICD_10 NOT LIKE '%-%-%'
-ORDER BY `2012` DESC
-LIMIT 10;
-
-SELECT '2020' AS Year, ICD_10, ICD_10_description, 2020 AS DiagnosesCount
-FROM diagnoses_DE
-WHERE ICD_10 NOT LIKE '%-%-%'
-ORDER BY `2020` DESC
-LIMIT 10;
-
-SELECT '2021' AS Year, ICD_10, ICD_10_description, 2021 AS DiagnosesCount
-FROM diagnoses_DE
-WHERE ICD_10 NOT LIKE '%-%-%'
-ORDER BY `2021` DESC
-LIMIT 10;
-
-
 -- US DATA
-
 -- Diagnosis Rate per year among all diagnoses
 SELECT
     ICD_10,
@@ -297,6 +275,7 @@ SELECT
 FROM
     diagnoses_US
 ORDER BY Percentage2020 DESC;
+
 
 -- Proportion of Diagnoses per 100k people per year
 SELECT
