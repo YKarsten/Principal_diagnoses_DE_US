@@ -2,136 +2,131 @@
 USE
     ICD_10_DE;
 
--- https://www-genesis.destatis.de/genesis/online?operation=find&suchanweisung_language=de&query=23131-0001#abreadcrumb
--- Statistisches Bundesamt Ergebnis 23131-0001
--- Krankenhauspatienten: Deutschland, Jahre, Hauptdiagnose ICD-10 (1-3-Steller Hierarchie)
-
+-- Import principal diagnosis data for Germany
 -- Drop the table if it exists
 DROP TABLE
-    IF EXISTS Diagnosen_DE;
+    IF EXISTS diagnoses_DE;
 
 -- Create the table with utf8mb4 character set
 CREATE TABLE
-    Diagnosen_DE (
+    diagnoses_DE (
         ICD_10 VARCHAR(255),
-        Hauptdiagnose VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, -- mySQL default encoding doesn't support 'Umlaute'
-        cases_2012 INT,
-        cases_2013 INT,
-        cases_2014 INT,
-        cases_2015 INT,
-        cases_2016 INT,
-        cases_2017 INT,
-        cases_2018 INT,
-        cases_2019 INT,
-        cases_2020 INT,
-        cases_2021 INT
+        ICD_10_description VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, -- mySQL default encoding doesn't support 'Umlaute'
+        `2012` INT,
+        `2013` INT,
+        `2014` INT,
+        `2015` INT,
+        `2016` INT,
+        `2017` INT,
+        `2018` INT,
+        `2019` INT,
+        `2020` INT,
+        `2021` INT
     );
 
 -- Load data from CSV
-LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\23131-0001_$F.csv' INTO TABLE Diagnosen_DE
+LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\23131-0001_$F.csv' INTO TABLE diagnoses_DE
 FIELDS TERMINATED BY ';' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 7 ROWS (
     ICD_10,
-    @Hauptdiagnose,
-    @cases_2012,
-    @cases_2013,
-    @cases_2014,
-    @cases_2015,
-    @cases_2016,
-    @cases_2017,
-    @cases_2018,
-    @cases_2019,
-    @cases_2020,
-    @cases_2021
+    @ICD_10_description,
+    @`2012`,
+    @`2013`,
+    @`2014`,
+    @`2015`,
+    @`2016`,
+    @`2017`,
+    @`2018`,
+    @`2019`,
+    @`2020`,
+    @`2021`
 )
 SET
-    Hauptdiagnose = CONVERT(REPLACE(REPLACE(REPLACE(@Hauptdiagnose, '\xF6', 'oe'), '\xFC', 'ue'), '\xE4', 'ae'), CHAR),
-    cases_2012 = NULLIF(@cases_2012, '-'),
-    cases_2013 = NULLIF(@cases_2013, '-'),
-    cases_2014 = NULLIF(@cases_2014, '-'),
-    cases_2015 = NULLIF(@cases_2015, '-'),
-    cases_2016 = NULLIF(@cases_2016, '-'),
-    cases_2017 = NULLIF(@cases_2017, '-'),
-    cases_2018 = NULLIF(@cases_2018, '-'),
-    cases_2019 = NULLIF(@cases_2019, '-'),
-    cases_2020 = NULLIF(@cases_2020, '-'),
-    cases_2021 = CASE
-        WHEN TRIM(@cases_2021) REGEXP '^[0-9]*\\.?[0-9]+$' THEN TRIM(@cases_2021)
+    ICD_10_description = CONVERT(REPLACE(REPLACE(REPLACE(@ICD_10_description, '\xF6', 'oe'), '\xFC', 'ue'), '\xE4', 'ae'), CHAR),
+    `2012` = NULLIF(@`2012`, '-'),
+    `2013` = NULLIF(@`2013`, '-'),
+    `2014` = NULLIF(@`2014`, '-'),
+    `2015` = NULLIF(@`2015`, '-'),
+    `2016` = NULLIF(@`2016`, '-'),
+    `2017` = NULLIF(@`2017`, '-'),
+    `2018` = NULLIF(@`2018`, '-'),
+    `2019` = NULLIF(@`2019`, '-'),
+    `2020` = NULLIF(@`2020`, '-'),
+    `2021` = CASE
+        WHEN TRIM(@`2021`) REGEXP '^[0-9]*\\.?[0-9]+$' THEN TRIM(@`2021`)
         ELSE NULL
     END;
 
--- Import population data according to  https://de.statista.com/statistik/daten/studie/1365/umfrage/bevoelkerung-deutschlands-nach-altersgruppen/
+-- Import population data for germany
 -- Drop the table if it exists
 DROP TABLE
     IF EXISTS population_DE;
 
 CREATE TABLE population_DE(
     `year` YEAR,
-    population FLOAT
+    population INT
 );
 
 -- Load data from CSV
 LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\DE_population.csv' INTO TABLE population_DE
 FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS (
     `Year`,
-    Population
-);
+    @population
+)
+SET
+    population = @population*1000000;
 
--- US data
--- https://hcup-us.ahrq.gov/db/nation/nis/nisdbdocumentation.jsp
--- https://hcup-us.ahrq.gov/db/nation/nis/HCUP-NIS2016-2020-DXandPRfreqs.xlsx
-
+-- Import principal diagnosis data for USA
 -- Drop the table if it exists
-DROP TABLE IF EXISTS diagnosis_US;
+DROP TABLE IF EXISTS diagnoses_US;
 
 -- Create the table with utf8mb4 character set
-CREATE TABLE diagnosis_US (
+CREATE TABLE diagnoses_US (
     ICD_10 VARCHAR(255),
     ICD_10_description VARCHAR(255),
-    DX1_weighted_2020 INT,
-    DX1_weighted_2019 INT,
-    DX1_weighted_2018 INT,
-    DX1_weighted_2017 INT,
-    DX1_weighted_2016 INT
+    `2020` INT,
+    `2019` INT,
+    `2018` INT,
+    `2017` INT,
+    `2016` INT
 );
 
 -- Load data from CSV, skipping the first 4 lines (metadata and headers)
-LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\HCUP-NIS2016-2020-DXandPRfreqs.csv' INTO TABLE diagnosis_US
+LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\HCUP-NIS2016-2020-DXandPRfreqs.csv' INTO TABLE diagnoses_US
 FIELDS TERMINATED BY '\t' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 8 LINES (
     ICD_10,
     ICD_10_description,
     @C,
     @D,
-    @DX1_weighted_2020,
+    @`2020`,
     @F,
     @G,
     @H,
-    @DX1_weighted_2019,
+    @`2019`,
     @J,
     @K,
     @L,
-    @DX1_weighted_2018,
+    @`2018`,
     @N,
     @O,
     @P,
-    @DX1_weighted_2017,
+    @`2017`,
     @R,
     @S,
     @T,
-    @DX1_weighted_2016,
+    @`2016`,
     @V,
     @W,
     @X
 )
 SET
-    DX1_weighted_2020 = NULLIF(REPLACE(REPLACE(@DX1_weighted_2020, '*', ''), ' ', ''), ''),
-    DX1_weighted_2019 = NULLIF(REPLACE(REPLACE(@DX1_weighted_2019, '*', ''), ' ', ''), ''),
-    DX1_weighted_2018 = NULLIF(REPLACE(REPLACE(@DX1_weighted_2018, '*', ''), ' ', ''), ''),
-    DX1_weighted_2017 = NULLIF(REPLACE(REPLACE(@DX1_weighted_2017, '*', ''), ' ', ''), ''),
-    DX1_weighted_2016 = NULLIF(REPLACE(REPLACE(@DX1_weighted_2016, '*', ''), ' ', ''), '');
+    `2020` = NULLIF(REPLACE(REPLACE(@`2020`, '*', ''), ' ', ''), ''),
+    `2019` = NULLIF(REPLACE(REPLACE(@`2019`, '*', ''), ' ', ''), ''),
+    `2018` = NULLIF(REPLACE(REPLACE(@`2018`, '*', ''), ' ', ''), ''),
+    `2017` = NULLIF(REPLACE(REPLACE(@`2017`, '*', ''), ' ', ''), ''),
+    `2016` = NULLIF(REPLACE(REPLACE(@`2016`, '*', ''), ' ', ''), '');
 
 
--- US population data
--- https://www2.census.gov/programs-surveys/popest/tables/2010-2020/national/totals/
+-- Import population data for USA
 DROP TABLE IF EXISTS population_US;
 
 CREATE TABLE population_US (
@@ -152,10 +147,10 @@ SET
 
 -- confirm the import by listing the column names
 SHOW COLUMNS 
-FROM Diagnosen_DE;
+FROM diagnoses_DE;
 
 SHOW COLUMNS  
-FROM diagnosis_US;
+FROM diagnoses_US;
 
 SELECT * FROM 
 population_DE;
@@ -165,9 +160,9 @@ population_US;
 
 -- Select all groups of diseases
 SELECT *
-FROM Diagnosen_DE
+FROM diagnoses_DE
 WHERE ICD_10 LIKE '%-%-%'
-ORDER BY cases_2012 DESC;
+ORDER BY `2012` DESC;
 
 ------------
 -- DE data
@@ -175,39 +170,40 @@ ORDER BY cases_2012 DESC;
 -- Diagnosis Rate per year among all diagnoses
 SELECT
     ICD_10,
-    Hauptdiagnose,
-    `cases_2021` AS TotalCases2021,
-    (`cases_2021` / (SELECT SUM(`cases_2021`) FROM Diagnosen_DE))*100 AS Percentage2021,
-    (`cases_2020` / (SELECT SUM(`cases_2020`) FROM Diagnosen_DE))*100 AS Percentage2020,
-    (`cases_2019` / (SELECT SUM(`cases_2019`) FROM Diagnosen_DE))*100 AS Percentage2019,
-    (`cases_2018` / (SELECT SUM(`cases_2018`) FROM Diagnosen_DE))*100 AS Percentage2018,
-    (`cases_2017` / (SELECT SUM(`cases_2017`) FROM Diagnosen_DE))*100 AS Percentage2017,
-    (`cases_2016` / (SELECT SUM(`cases_2016`) FROM Diagnosen_DE))*100 AS Percentage2016,
-    (`cases_2015` / (SELECT SUM(`cases_2015`) FROM Diagnosen_DE))*100 AS Percentage2015,
-    (`cases_2014` / (SELECT SUM(`cases_2014`) FROM Diagnosen_DE))*100 AS Percentage2014,
-    (`cases_2013` / (SELECT SUM(`cases_2013`) FROM Diagnosen_DE))*100 AS Percentage2013,
-    (`cases_2012` / (SELECT SUM(`cases_2012`) FROM Diagnosen_DE))*100 AS Percentage2012
+    ICD_10_description,
+    `2021` AS TotalCases2021,   
+    (`2021` / (SELECT SUM(`2021`) FROM diagnoses_DE))*100 AS Percentage2021,
+    (`2020` / (SELECT SUM(`2020`) FROM diagnoses_DE))*100 AS Percentage2020,
+    (`2019` / (SELECT SUM(`2019`) FROM diagnoses_DE))*100 AS Percentage2019,
+    (`2018` / (SELECT SUM(`2018`) FROM diagnoses_DE))*100 AS Percentage2018,
+    (`2017` / (SELECT SUM(`2017`) FROM diagnoses_DE))*100 AS Percentage2017,
+    (`2016` / (SELECT SUM(`2016`) FROM diagnoses_DE))*100 AS Percentage2016,
+    (`2015` / (SELECT SUM(`2015`) FROM diagnoses_DE))*100 AS Percentage2015,
+    (`2014` / (SELECT SUM(`2014`) FROM diagnoses_DE))*100 AS Percentage2014,
+    (`2013` / (SELECT SUM(`2013`) FROM diagnoses_DE))*100 AS Percentage2013,
+    (`2012` / (SELECT SUM(`2012`) FROM diagnoses_DE))*100 AS Percentage2012
 FROM
-    Diagnosen_DE
+    diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%'
 ORDER BY Percentage2021 DESC;
 
 -- Proportion of Diagnoses per 100k people per year
 SELECT
     d.ICD_10,
-    d.Hauptdiagnose,
-    `cases_2021` AS TotalCases2021,
-    (d.cases_2021 / P2021.Population / 1000000) * 100000 AS Cases_per_100k_2021,
-    (d.cases_2020 / P2020.Population / 1000000) * 100000 AS Cases_per_100k_2020,
-    (d.cases_2019 / P2019.Population / 1000000) * 100000 AS Cases_per_100k_2019,
-    (d.cases_2018 / P2018.Population / 1000000) * 100000 AS Cases_per_100k_2018,
-    (d.cases_2017 / P2017.Population / 1000000) * 100000 AS Cases_per_100k_2017,
-    (d.cases_2016 / P2016.Population / 1000000) * 100000 AS Cases_per_100k_2016,
-    (d.cases_2015 / P2015.Population / 1000000) * 100000 AS Cases_per_100k_2015,
-    (d.cases_2014 / P2014.Population / 1000000) * 100000 AS Cases_per_100k_2014,
-    (d.cases_2013 / P2013.Population / 1000000) * 100000 AS Cases_per_100k_2013,
-    (d.cases_2012 / P2012.Population / 1000000) * 100000 AS Cases_per_100k_2012
+    d.ICD_10_description,
+    `2021` AS TotalCases2021,
+    (d.2021 / P2021.Population) * 100000 AS Cases_per_100k_2021,
+    (d.2020 / P2020.Population) * 100000 AS Cases_per_100k_2020,
+    (d.2019 / P2019.Population) * 100000 AS Cases_per_100k_2019,
+    (d.2018 / P2018.Population) * 100000 AS Cases_per_100k_2018,
+    (d.2017 / P2017.Population) * 100000 AS Cases_per_100k_2017,
+    (d.2016 / P2016.Population) * 100000 AS Cases_per_100k_2016,
+    (d.2015 / P2015.Population) * 100000 AS Cases_per_100k_2015,
+    (d.2014 / P2014.Population) * 100000 AS Cases_per_100k_2014,
+    (d.2013 / P2013.Population) * 100000 AS Cases_per_100k_2013,
+    (d.2012 / P2012.Population) * 100000 AS Cases_per_100k_2012
 FROM
-    Diagnosen_DE d
+    diagnoses_DE d
 JOIN
     population_DE AS P2021 ON P2021.Year = 2021
 JOIN
@@ -228,6 +224,7 @@ JOIN
     population_DE AS P2013 ON P2013.Year = 2013 
 JOIN
     population_DE AS P2012 ON P2012.Year = 2012 
+WHERE ICD_10 NOT LIKE '%-%-%'
 ORDER BY Cases_per_100k_2021 DESC;
 
 
@@ -235,80 +232,54 @@ ORDER BY Cases_per_100k_2021 DESC;
 -- Select diagnosis that increased the most from 2012 to 2021 in relation to the population
 SELECT
     D.ICD_10,
-    D.Hauptdiagnose,
-    ((D.cases_2021 / P2021.population - D.cases_2012 / P2012.population) / (D.cases_2012 / P2012.population)) * 100 AS Percentage_Increase_Relative_to_Population
-FROM Diagnosen_DE AS D
+    D.ICD_10_description,
+    ((D.2021 / P2021.population - D.2012 / P2012.population) / (D.2012 / P2012.population)) * 100 AS Percentage_Increase_Relative_to_Population
+FROM diagnoses_DE AS D
 JOIN population_DE AS P2021 ON P2021.Year = 2021
 JOIN population_DE AS P2012 ON P2012.Year = 2012
-WHERE D.cases_2021 > D.cases_2012 AND ICD_10 NOT LIKE '%-%-%'
+WHERE D.2021 > D.2012 AND ICD_10 NOT LIKE '%-%-%'
 ORDER BY Percentage_Increase_Relative_to_Population DESC;
 
 -- Select diagnosis that increased the most from 2012 to 2021 in relation to the population. Broad categories
 SELECT
     D.ICD_10,
-    D.Hauptdiagnose,
-    ((D.cases_2021 / P2021.population - D.cases_2012 / P2012.population) / (D.cases_2012 / P2012.population)) * 100 AS Percentage_Increase_Relative_to_Population
-FROM Diagnosen_DE AS D
+    D.ICD_10_description,
+    ((D.2021 / P2021.population - D.2012 / P2012.population) / (D.2012 / P2012.population)) * 100 AS Percentage_Increase_Relative_to_Population
+FROM diagnoses_DE AS D
 JOIN population_DE AS P2021 ON P2021.Year = 2021
 JOIN population_DE AS P2012 ON P2012.Year = 2012
-WHERE D.cases_2021 > D.cases_2012 AND ICD_10 LIKE '%-%-%'
+WHERE D.2021 > D.2012 AND ICD_10 LIKE '%-%-%'
 ORDER BY Percentage_Increase_Relative_to_Population DESC;
 
 -- Select diagnosis that increased the most from 2016 to 2020 in relation to the population. Broad categories
 SELECT
     D.ICD_10,
-    D.Hauptdiagnose,
-    ((D.cases_2020 / P2020.population - D.cases_2016 / P2016.population) / (D.cases_2016 / P2016.population)) * 100 AS Percentage_Increase_Relative_to_Population
-FROM Diagnosen_DE AS D
+    D.ICD_10_description,
+    ((D.2020 / P2020.population - D.2016 / P2016.population) / (D.2016 / P2016.population)) * 100 AS Percentage_Increase_Relative_to_Population
+FROM diagnoses_DE AS D
 JOIN population_DE AS P2020 ON P2020.Year = 2020
 JOIN population_DE AS P2016 ON P2016.Year = 2016
-WHERE D.cases_2020 > D.cases_2016 AND ICD_10 LIKE '%-%-%'
+WHERE D.2020 > D.2016 AND ICD_10 LIKE '%-%-%'
 ORDER BY Percentage_Increase_Relative_to_Population DESC;
 
 -- Most prevalent diagnosis
-SELECT '2012' AS Year, ICD_10, Hauptdiagnose, cases_2012 AS DiagnosesCount
-FROM Diagnosen_DE
+SELECT '2012' AS Year, ICD_10, ICD_10_description, 2012 AS DiagnosesCount
+FROM diagnoses_DE
 WHERE ICD_10 NOT LIKE '%-%-%'
-ORDER BY cases_2012 DESC
+ORDER BY `2012` DESC
 LIMIT 10;
 
-SELECT '2020' AS Year, ICD_10, Hauptdiagnose, cases_2020 AS DiagnosesCount
-FROM Diagnosen_DE
+SELECT '2020' AS Year, ICD_10, ICD_10_description, 2020 AS DiagnosesCount
+FROM diagnoses_DE
 WHERE ICD_10 NOT LIKE '%-%-%'
-ORDER BY cases_2020 DESC
+ORDER BY `2020` DESC
 LIMIT 10;
 
-SELECT '2021' AS Year, ICD_10, Hauptdiagnose, cases_2021 AS DiagnosesCount
-FROM Diagnosen_DE
+SELECT '2021' AS Year, ICD_10, ICD_10_description, 2021 AS DiagnosesCount
+FROM diagnoses_DE
 WHERE ICD_10 NOT LIKE '%-%-%'
-ORDER BY cases_2021 DESC
+ORDER BY `2021` DESC
 LIMIT 10;
-
--- Zeitlicher Verlauf ausgewählter Erkrankungen
--- Krankheiten des Atmungssystems
-SELECT *
-FROM Diagnosen_DE
-WHERE ICD_10 LIKE 'ICD10-J00-J99';
-
--- Krankheiten des Kreislaufsystems
-SELECT *
-FROM Diagnosen_DE
-WHERE ICD_10 LIKE 'ICD10-I00-I99';
-
--- Psychische und Verhaltensstörungen
-SELECT *
-FROM Diagnosen_DE
-WHERE ICD_10 LIKE 'ICD10-F00-F99';
-
--- Schwangerschaft, Geburt und Wochenbett
-SELECT *
-FROM Diagnosen_DE
-WHERE ICD_10 LIKE 'ICD10-O00-O99';
-
---   Vorl.Zuord. f. Kh. m.unkl.Ätiologie u.n.b.Schl-Nr.
-SELECT *
-FROM Diagnosen_DE
-WHERE ICD_10 LIKE 'ICD10-U00-U49';
 
 
 -- US DATA
@@ -317,28 +288,28 @@ WHERE ICD_10 LIKE 'ICD10-U00-U49';
 SELECT
     ICD_10,
     ICD_10_description,
-    `DX1_Weighted_2020` AS TotalCases2020,
-    (`DX1_Weighted_2020` / (SELECT SUM(`DX1_Weighted_2020`) FROM diagnosis_US))*100 AS Percentage2020,
-    (`DX1_Weighted_2019` / (SELECT SUM(`DX1_Weighted_2019`) FROM diagnosis_US))*100 AS Percentage2019,
-    (`DX1_Weighted_2018` / (SELECT SUM(`DX1_Weighted_2018`) FROM diagnosis_US))*100 AS Percentage2018,
-    (`DX1_Weighted_2017` / (SELECT SUM(`DX1_Weighted_2017`) FROM diagnosis_US))*100 AS Percentage2017,
-    (`DX1_Weighted_2016` / (SELECT SUM(`DX1_Weighted_2016`) FROM diagnosis_US))*100 AS Percentage2016
+    `2020` AS TotalCases2020,
+    (`2020` / (SELECT SUM(`2020`) FROM diagnoses_US))*100 AS Percentage2020,
+    (`2019` / (SELECT SUM(`2019`) FROM diagnoses_US))*100 AS Percentage2019,
+    (`2018` / (SELECT SUM(`2018`) FROM diagnoses_US))*100 AS Percentage2018,
+    (`2017` / (SELECT SUM(`2017`) FROM diagnoses_US))*100 AS Percentage2017,
+    (`2016` / (SELECT SUM(`2016`) FROM diagnoses_US))*100 AS Percentage2016
 FROM
-    diagnosis_US
+    diagnoses_US
 ORDER BY Percentage2020 DESC;
 
 -- Proportion of Diagnoses per 100k people per year
 SELECT
     d.ICD_10,
     d.ICD_10_description,
-    `DX1_Weighted_2020` AS TotalCases2020,
-    (d.DX1_Weighted_2020 / P2020.Population) * 1000000 AS Cases_per_100k_2020,
-    (d.DX1_Weighted_2019 / p2019.Population) * 1000000 AS Cases_per_100k_2019,
-    (d.DX1_Weighted_2018 / p2018.Population) * 1000000 AS Cases_per_100k_2018,
-    (d.DX1_Weighted_2017 / p2017.Population) * 1000000 AS Cases_per_100k_2017,
-    (d.DX1_Weighted_2016 / p2016.Population) * 1000000 AS Cases_per_100k_2016
+    `2020` AS TotalCases2020,
+    (d.`2020` / P2020.Population) * 1000000 AS Cases_per_100k_2020,
+    (d.`2019` / p2019.Population) * 1000000 AS Cases_per_100k_2019,
+    (d.`2018` / p2018.Population) * 1000000 AS Cases_per_100k_2018,
+    (d.`2017` / p2017.Population) * 1000000 AS Cases_per_100k_2017,
+    (d.`2016` / p2016.Population) * 1000000 AS Cases_per_100k_2016
 FROM
-    diagnosis_US d
+    diagnoses_US d
 JOIN
     population_US AS P2020 ON P2020.Year = 2020
 JOIN
@@ -351,72 +322,170 @@ JOIN
     population_US AS P2016 ON P2016.Year = 2016 
 ORDER BY Cases_per_100k_2020 DESC;
 
-
--- Zeitlicher Verlauf ausgewählter Erkrankungen
--- Krankheiten des Atmungssystems
-SELECT 
-    'Respiratory diseases' AS Description,
-    SUM(DX1_weighted_2020) AS SumCases2020,
-    SUM(DX1_weighted_2019) AS SumCases2019,
-    SUM(DX1_weighted_2018) AS SumCases2018,
-    SUM(DX1_weighted_2017) AS SumCases2017,
-    SUM(DX1_weighted_2016) AS SumCases2016
-FROM diagnosis_US
-WHERE ICD_10 LIKE 'J%';
-
-
--- Krankheiten des Kreislaufsystems
-SELECT 
-    'Diseases of the circulatory system' AS Description,
-    SUM(DX1_weighted_2020) AS SumCases2020,
-    SUM(DX1_weighted_2019) AS SumCases2019,
-    SUM(DX1_weighted_2018) AS SumCases2018,
-    SUM(DX1_weighted_2017) AS SumCases2017,
-    SUM(DX1_weighted_2016) AS SumCases2016
-FROM diagnosis_US
-WHERE ICD_10 LIKE 'I%';
-
--- Psychische und Verhaltensstörungen
-SELECT 
-    'Mental and behavioral disorders' AS Description,
-    SUM(DX1_weighted_2020) AS SumCases2020,
-    SUM(DX1_weighted_2019) AS SumCases2019,
-    SUM(DX1_weighted_2018) AS SumCases2018,
-    SUM(DX1_weighted_2017) AS SumCases2017,
-    SUM(DX1_weighted_2016) AS SumCases2016
-FROM diagnosis_US
-WHERE ICD_10 LIKE 'F%';
-
--- Schwangerschaft, Geburt und Wochenbett
-SELECT 
-    'Pregnancy, birth and postpartum' AS Description,
-    SUM(DX1_weighted_2020) AS SumCases2020,
-    SUM(DX1_weighted_2019) AS SumCases2019,
-    SUM(DX1_weighted_2018) AS SumCases2018,
-    SUM(DX1_weighted_2017) AS SumCases2017,
-    SUM(DX1_weighted_2016) AS SumCases2016
-FROM diagnosis_US
-WHERE ICD_10 LIKE 'O%';
-
-
---   Vorl.Zuord. f. Kh. m.unkl.Ätiologie u.n.b.Schl-Nr.
-SELECT 
-    'Preliminary assign. f. Hospital with unclear etiology and no specific key no.' AS Description,
-    SUM(DX1_weighted_2020) AS SumCases2020,
-    SUM(DX1_weighted_2019) AS SumCases2019,
-    SUM(DX1_weighted_2018) AS SumCases2018,
-    SUM(DX1_weighted_2017) AS SumCases2017,
-    SUM(DX1_weighted_2016) AS SumCases2016
-FROM diagnosis_US
-WHERE ICD_10 LIKE 'U%';
-
--- Select diagnosis that increased the most from 2016 to 2020 in relation to the population
+-- Select diagnoses that increased the most from 2016 to 2020 in relation to the population
 SELECT
     D.ICD_10,
     D.ICD_10_description,
-    ((D.DX1_weighted_2020 / P2020.population - D.DX1_weighted_2016 / P2016.population) / (D.DX1_weighted_2016 / P2016.population)) * 100 AS Percentage_Increase_Relative_to_Population
-FROM diagnosis_US AS D
+    ((D.`2020` / P2020.population - D.`2016` / P2016.population) / (D.`2016` / P2016.population)) * 100 AS Percentage_Increase_Relative_to_Population
+FROM diagnoses_US AS D
 JOIN population_US AS P2020 ON P2020.Year = 2020
 JOIN population_US AS P2016 ON P2016.Year = 2016
-WHERE D.DX1_weighted_2020 > D.DX1_weighted_2016 
+WHERE D.`2020` > D.`2016`
 ORDER BY Percentage_Increase_Relative_to_Population DESC;
+
+
+
+-- Zeitlicher Verlauf ausgewählter Erkrankungen
+-- ICD10-E00-E90 Endokrine, Ernährungs- und Stoffwechselkrankheiten
+SELECT 
+    'Endocrine US' AS Description,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%')/ SUM(`2020`)) * 100 AS Perc_Endocrine_2020,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%')/ SUM(`2019`)) * 100 AS Perc_Endocrine_2019,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%')/ SUM(`2018`)) * 100 AS Perc_Endocrine_2018,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%')/ SUM(`2017`)) * 100 AS Perc_Endocrine_2017,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%')/ SUM(`2016`)) * 100 AS Perc_Endocrine_2016
+FROM
+    diagnoses_US
+UNION
+SELECT 
+    'Endocrine DE' AS Description,
+    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Endocrine_2020,
+    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Endocrine_2019,
+    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Endocrine_2018,
+    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Endocrine_2017,
+    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Endocrine_2016
+FROM
+    diagnoses_DE;
+
+-- Krankheiten des Atmungssystems
+SELECT 
+    'Respiratory diseases US' AS Description,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%')/ SUM(`2020`)) * 100 AS Perc_Respiratory_2020,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%')/ SUM(`2019`)) * 100 AS Perc_Respiratory_2019,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%')/ SUM(`2018`)) * 100 AS Perc_Respiratory_2018,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%')/ SUM(`2017`)) * 100 AS Perc_Respiratory_2017,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%')/ SUM(`2016`)) * 100 AS Perc_Respiratory_2016
+FROM
+    diagnoses_US
+UNION
+SELECT 
+    'Respiratory diseases DE' AS Description,
+    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Respiratory_2020,
+    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Respiratory_2019,
+    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Respiratory_2018,
+    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Respiratory_2017,
+    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Respiratory_2016
+FROM
+    diagnoses_DE;
+
+-- Krankheiten des Kreislaufsystems
+
+SELECT 
+    'Circulatory system US' AS Description,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%')/ SUM(`2020`)) * 100 AS Perc_Circulatory_2020,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%')/ SUM(`2019`)) * 100 AS Perc_Circulatory_2019,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%')/ SUM(`2018`)) * 100 AS Perc_Circulatory_2018,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%')/ SUM(`2017`)) * 100 AS Perc_Circulatory_2017,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%')/ SUM(`2016`)) * 100 AS Perc_Circulatory_2016
+FROM
+    diagnoses_US
+UNION
+SELECT 
+    'Circulatory system DE' AS Description,
+    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Circulatory_2020,
+    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Circulatory_2019,
+    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Circulatory_2018,
+    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Circulatory_2017,
+    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Circulatory_2016
+FROM
+    diagnoses_DE;
+
+
+-- Psychische und Verhaltensstörungen
+SELECT 
+    'Mental Disorders US' AS Description,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%')/ SUM(`2020`)) * 100 AS Perc_Mental_2020,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%')/ SUM(`2019`)) * 100 AS Perc_Mental_2019,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%')/ SUM(`2018`)) * 100 AS Perc_Mental_2018,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%')/ SUM(`2017`)) * 100 AS Perc_Mental_2017,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%')/ SUM(`2016`)) * 100 AS Perc_Mental_2016
+FROM
+    diagnoses_US
+UNION
+SELECT 
+    'Mental Disorders DE' AS Description,
+    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Mental_2020,
+    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Mental_2019,
+    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Mental_2018,
+    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Mental_2017,
+    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Mental_2016
+FROM
+    diagnoses_DE;
+
+-- Schwangerschaft, Geburt und Wochenbett
+SELECT 
+    'Pregnancy US' AS Description,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%')/ SUM(`2020`)) * 100 AS Perc_Pregnancy_2020,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%')/ SUM(`2019`)) * 100 AS Perc_Pregnancy_2019,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%')/ SUM(`2018`)) * 100 AS Perc_Pregnancy_2018,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%')/ SUM(`2017`)) * 100 AS Perc_Pregnancy_2017,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%')/ SUM(`2016`)) * 100 AS Perc_Pregnancy_2016
+FROM
+    diagnoses_US
+UNION
+SELECT 
+    'Pregnancy DE' AS Description,
+    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Pregnancy_2020,
+    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Pregnancy_2019,
+    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Pregnancy_2018,
+    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Pregnancy_2017,
+    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Pregnancy_2016
+FROM
+    diagnoses_DE;
+
+
+-- ICD10-Z00-Z99 Faktoren,die zur Inanspruchn.d.Gesundheitsw.führen
+SELECT 
+    'Z-codes US' AS Description,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%')/ SUM(`2020`)) * 100 AS Perc_Z_Code_2020,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%')/ SUM(`2019`)) * 100 AS Perc_Z_Code_2019,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%')/ SUM(`2018`)) * 100 AS Perc_Z_Code_2018,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%')/ SUM(`2017`)) * 100 AS Perc_Z_Code_2017,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%')/ SUM(`2016`)) * 100 AS Perc_Z_Code_2016
+FROM
+    diagnoses_US
+UNION
+SELECT 
+    'Z-codes DE' AS Description,
+    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Z_Code_2020,
+    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Z_Code_2019,
+    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Z_Code_2018,
+    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Z_Code_2017,
+    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Z_Code_2016
+FROM
+    diagnoses_DE;
+
+
+
+-- ICD10-U00-U85 Schlüsselnummern für besondere Zwecke
+-- ICD10-U00-U49 Vorl.Zuord. f. Kh. m.unkl.Ätiologie u.n.b.Schl-Nr.
+
+SELECT 
+    'unknown US' AS Description,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2020`)) * 100 AS Perc_unknown_2020,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2019`)) * 100 AS Perc_unknown_2019,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2018`)) * 100 AS Perc_unknown_2018,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2017`)) * 100 AS Perc_unknown_2017,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2016`)) * 100 AS Perc_unknown_2016
+FROM
+    diagnoses_US
+UNION
+SELECT 
+    'unknown DE' AS Description,
+    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_unknown_2020,
+    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_unknown_2019,
+    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_unknown_2018,
+    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_unknown_2017,
+    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_unknown_2016
+FROM
+    diagnoses_DE;
