@@ -71,14 +71,14 @@ Please note that setting up MySQL and running these queries may require some lev
 **Covid-19:**
 As part of my analysis, it's essential to acknowledge the unique nature of COVID-19 and its impact on healthcare data collection. When the COVID-19 pandemic began, there was no specific ICD-10 code in place to identify this new disease. As a result, COVID-19-related data was initially dispersed among different placeholder codes and diagnostic groups, such as pneumonia.
 
-| -       | ICD_10  | ICD_10_description                              | 2020   | 2019   | 2018   | 2017   | 2016   |
-|---------|---------|-------------------------------------------------|--------|--------|--------|--------|--------|
-| Germany | U071    | COVID-19                                        | -      | -      | -      | -      | -      |
-| USA     | U071    | COVID-19                                        | 3.2927 | -      | -      | -      | -      |
-| Germany | U04     | Schweres akutes respiratorisches Syndrom (SARS) | 0.0009 | -      | -      | -      | -      |
-| USA     | U04     | Schweres akutes respiratorisches Syndrom (SARS) | -      | -      | -      | -      | -      |
-| Germany | J00-J99 | Diseases of the respiratory system              | 6.0521 | 6.4538 | 6.6136 | 6.5231 | 6.3333 |
-| USA     | J00-J99 | Diseases of the respiratory system              | 5.9028 | 7.6067 | 7.8383 | 7.9464 | 7.8105 |
+| -       | ICD_10  | ICD_10_description                       | 2020   | 2019   | 2018   | 2017   | 2016   |
+|---------|---------|------------------------------------------|--------|--------|--------|--------|--------|
+| Germany | U71     | Covid-19                                 | -      | -      | -      | -      | -      |
+| USA     | U71     | Covid-19                                 | 3.2927 | -      | -      | -      | -      |
+| Germany | U4      | Severe acute respiratory syndrome [SARS] | 0.0009 | -      | -      | -      | -      |
+| USA     | U4      | Severe acute respiratory syndrome [SARS] | -      | -      | -      | -      | -      |
+| Germany | J00-J99 | Diseases of the respiratory system       | 6.0521 | 6.4538 | 6.6136 | 6.5231 | 6.3333 |
+| USA     | J00-J99 | Diseases of the respiratory system       | 5.9028 | 7.6067 | 7.8383 | 7.9464 | 7.8105 |
 
 My comparative analysis of hospital discharges between Germany and the United States (2016-2020) revealed a notable challenge regarding the diagnosis of COVID-19. The absence of a specific ICD-10 code for COVID-19 during the initial stages of the pandemic led to supposed data dispersion within broader diagnostic categories, including provisional codes in category U, "Diseases of uncertain etiology," and category J, "Diseases of the respiratory system."
 
@@ -96,10 +96,10 @@ The absence of a dedicated ICD-10 code for COVID-19 in the early stages of the p
 
 **Z3800: Single liveborn infant, delivered vaginally:**  
 
-| Country | ICD_10    | ICD_10_description                 | 2020    | 2019    | 2018    | 2017    | 2016    |
-|---------|-----------|------------------------------------|---------|---------|---------|---------|---------|
-| Germany | ICD10-Z38 | Lebendgeborene nach dem Geburtsort | 3.0958  | 2.7630  | 2.8085  | 2.7764  | 2.7682  |
-| USA     | ICD10-Z38 | Lebendgeborene nach dem Geburtsort | 10.7146 | 10.1320 | 10.2285 | 10.3784 | 10.6718 |
+| -       | ICD_10 | ICD_10_description                           | 2020    | 2019    | 2018    | 2017    | 2016    |
+|---------|--------|----------------------------------------------|---------|---------|---------|---------|---------|
+| Germany | Z38    | Liveborn infants according to place of birth | 3.0958  | 2.7630  | 2.8085  | 2.7764  | 2.7682  |
+| USA     | Z38    | Liveborn infants according to place of birth | 10.7146 | 10.1320 | 10.2285 | 10.3784 | 10.6718 |
 
 In the United States, around 10% of hospital discharges were associated with this diagnosis, reflecting a substantial proportion of vaginal deliveries.
 In contrast, Germany reported notably lower numbers, with approximately 2-3% of hospital discharges linked to this "diagnosis".
@@ -109,10 +109,10 @@ This variance may stem from variations in healthcare practices, the availability
 
 **A41.9: Sepsis, unspecified organism:**
 
-| Country | ICD_10    | ICD_10_description | 2020   | 2019   | 2018   | 2017   | 2016   |
-|---------|-----------|--------------------|--------|--------|--------|--------|--------|
-| Germany | ICD10-A41 | Sonstige Sepsis    | 0.3930 | 0.6568 | 0.6407 | 0.6142 | 0.6059 |
-| USA     | ICD10-A41 | Sonstige Sepsis    | 7.2134 | 6.2230 | 6.0526 | 5.6488 | 5.1295 |
+| -       | ICD_10 | ICD_10_description | 2020   | 2019   | 2018   | 2017   | 2016   |
+|---------|--------|--------------------|--------|--------|--------|--------|--------|
+| Germany | A41    | Other sepsis       | 0.3930 | 0.6568 | 0.6407 | 0.6142 | 0.6059 |
+| USA     | A41    | Other sepsis       | 7.2134 | 6.2230 | 6.0526 | 5.6488 | 5.1295 |
 
 In the United States, this diagnosis accounted for approximately 5-7% of all hospital discharges, indicating a relatively high incidence of sepsis cases. This high prevalence may suggest delayed medical intervention, potentially due to healthcare access issues.
 
