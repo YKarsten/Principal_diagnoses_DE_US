@@ -60,11 +60,86 @@ This section covers the key steps involved in both data analysis and setting up 
 
 3. **SQL Queries**: The SQL queries used in this analysis are available in the [project's code repository](principal_diagnosis.sql). You can run these queries against your MySQL database to extract and transform the data.
 
-4. **View Creation**: To visualize the data in Tableau, you can create views based on the SQL queries you've executed. Please note that this part is a work in progress.
+4. **View Creation (WIP)**: To visualize the data in Tableau, you can create views based on the SQL queries you've executed. Please note that this part is a work in progress.
 
 The project involves a comparative analysis of hospital discharge data from Germany and the United States over a ten-year period, from 2012 to 2021. The primary objective is to gain insights into the principal diagnoses recorded in hospitals in these two countries and understand any significant trends or variations in healthcare utilization.
 
 Please note that setting up MySQL and running these queries may require some level of expertise in database management. If you encounter any issues or need further assistance, consider referring to MySQL's official documentation or community resources for additional guidance.
+
+ 
+## Findings
+**Covid-19:**
+As part of my analysis, it's essential to acknowledge the unique nature of COVID-19 and its impact on healthcare data collection. When the COVID-19 pandemic began, there was no specific ICD-10 code in place to identify this new disease. As a result, COVID-19-related data was initially dispersed among different placeholder codes and diagnostic groups, such as pneumonia.
+
+| -       | ICD_10  | ICD_10_description                              | 2020   | 2019   | 2018   | 2017   | 2016   |
+|---------|---------|-------------------------------------------------|--------|--------|--------|--------|--------|
+| Germany | U071    | COVID-19                                        | -      | -      | -      | -      | -      |
+| USA     | U071    | COVID-19                                        | 3.2927 | -      | -      | -      | -      |
+| Germany | U04     | Schweres akutes respiratorisches Syndrom (SARS) | 0.0009 | -      | -      | -      | -      |
+| USA     | U04     | Schweres akutes respiratorisches Syndrom (SARS) | -      | -      | -      | -      | -      |
+| Germany | J00-J99 | Diseases of the respiratory system              | 6.0521 | 6.4538 | 6.6136 | 6.5231 | 6.3333 |
+| USA     | J00-J99 | Diseases of the respiratory system              | 5.9028 | 7.6067 | 7.8383 | 7.9464 | 7.8105 |
+
+My comparative analysis of hospital discharges between Germany and the United States (2016-2020) revealed a notable challenge regarding the diagnosis of COVID-19. The absence of a specific ICD-10 code for COVID-19 during the initial stages of the pandemic led to supposed data dispersion within broader diagnostic categories, including provisional codes in category U, "Diseases of uncertain etiology," and category J, "Diseases of the respiratory system."
+
+In Germany, the official ICD-10 code U07.1, designated by the World Health Organization (WHO) for COVID-19, was not present in the source data for 2020 and 2021. It is likely that the diagnosis was categorized within the provisional codes in category U and/or category J.
+
+In the United States, COVID-19 diagnosis codes were likely established earlier with a prevalence for covid at 3.3% in 2020.
+
+In both countries, there was a slight decrease in diagnoses related to diseases of the respiratory system from their previous levels, with the US experiencing a drop from around 7.5-8% to 5.9%, and Germany showing a decline from approximately 6.5% to 6.0%.
+
+This finding underscores the complexity of conducting a comparative analysis during a rapidly evolving health crisis, where changes in diagnostic coding and practices can significantly impact the interpretation of healthcare data. Further investigation into the reasons behind these diagnostic shifts is essential to gain a comprehensive understanding of the data trends observed in both countries.
+
+The absence of a dedicated ICD-10 code for COVID-19 in the early stages of the pandemic posed challenges for data interpretation. While I have observed trends related to diseases of the respiratory system, the full extent of the impact of COVID-19 on hospital discharges remains uncertain in Germany due to the lack of specific ICD-10 codes in the source data for 2020 and 2021. Access to this missing information could potentially reshape my analysis.
+
+---
+
+**Z3800: Single liveborn infant, delivered vaginally:**  
+
+| Country | ICD_10    | ICD_10_description                 | 2020    | 2019    | 2018    | 2017    | 2016    |
+|---------|-----------|------------------------------------|---------|---------|---------|---------|---------|
+| Germany | ICD10-Z38 | Lebendgeborene nach dem Geburtsort | 3.0958  | 2.7630  | 2.8085  | 2.7764  | 2.7682  |
+| USA     | ICD10-Z38 | Lebendgeborene nach dem Geburtsort | 10.7146 | 10.1320 | 10.2285 | 10.3784 | 10.6718 |
+
+In the United States, around 10% of hospital discharges were associated with this diagnosis, reflecting a substantial proportion of vaginal deliveries.
+In contrast, Germany reported notably lower numbers, with approximately 2-3% of hospital discharges linked to this "diagnosis".
+This variance may stem from variations in healthcare practices, the availability of out-of-hospital childbirth facilities like "Geburtshaus" in Germany, and cultural preferences. 
+
+---
+
+**A41.9: Sepsis, unspecified organism:**
+
+| Country | ICD_10    | ICD_10_description | 2020   | 2019   | 2018   | 2017   | 2016   |
+|---------|-----------|--------------------|--------|--------|--------|--------|--------|
+| Germany | ICD10-A41 | Sonstige Sepsis    | 0.3930 | 0.6568 | 0.6407 | 0.6142 | 0.6059 |
+| USA     | ICD10-A41 | Sonstige Sepsis    | 7.2134 | 6.2230 | 6.0526 | 5.6488 | 5.1295 |
+
+In the United States, this diagnosis accounted for approximately 5-7% of all hospital discharges, indicating a relatively high incidence of sepsis cases. This high prevalence may suggest delayed medical intervention, potentially due to healthcare access issues.
+
+In contrast, Germany reported a much lower occurrence, with only about 0.4-0.6% of hospital discharges linked to this diagnosis.
+
+This significant divergence may be associated with disparities in healthcare access, where individuals in the United States may delay seeking medical attention due to insurance-related concerns. Consequently, infections may progress to life-threatening sepsis, necessitating hospitalization. Further investigation into healthcare policies, accessibility to medical care, and patient behaviors could shed light on the observed differences.
+
+---
+
+My analysis of hospital discharges in Germany and the United States from 2016 to 2020 reveals an interesting trend related to the prevalence of diabetes, including both type 1 and type 2.
+
+**Diabetes Mellitus:**
+
+| -       | ICD_10  | ICD_10_description | 2020   | 2019   | 2018   | 2017   | 2016   |
+|---------|---------|--------------------|--------|--------|--------|--------|--------|
+| Germany | E10-E14 | Diabetes mellitus  | 0.9710 | 1.0083 | 1.0258 | 1.0288 | 1.0341 |
+| USA     | E10-E14 | Diabetes mellitus  | 2.0497 | 1.9935 | 1.9209 | 1.8497 | 1.6331 |
+
+In the United States, I observed a slight increase in the prevalence of diabetes cases, rising from approximately 1.6% in 2016 to 2% in 2020. This indicates a higher number of individuals receiving treatment for diabetes during this period.
+
+In contrast, Germany's data suggests that the prevalence of diabetes cases remained relatively stable, hovering around 1% over the same period.
+
+It's important to note that these figures reflect the number of individuals who received treatment for diabetes in hospitals, rather than the total number of individuals affected by the disease. While this data provides insights into healthcare utilization, it may not directly represent the overall prevalence of diabetes in each country.
+
+---
+
+The analysis is ongoing, and findings will be updated in this README as they become available. Insights may include trends in principal diagnoses, differences in healthcare utilization, and other noteworthy observations.
 
 ## References
 
@@ -88,9 +163,6 @@ Please note that setting up MySQL and running these queries may require some lev
 - Source: United States Census Bureau
 - Description: "National Demographic Data 2010 to 2020"
 - [Access Data](https://www2.census.gov/programs-surveys/popest/tables/2010-2020/national/totals/)
-  
-## Findings
-The analysis is ongoing, and findings will be updated in this README as they become available. Insights may include trends in principal diagnoses, differences in healthcare utilization, and other noteworthy observations.
-
+ 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](license.txt) file for details.
