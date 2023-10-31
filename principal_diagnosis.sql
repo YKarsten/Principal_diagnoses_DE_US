@@ -533,7 +533,7 @@ SELECT
     ICD_10_description,
     '2020' AS Year,
     `2020` AS Cases,
-    (`2020` / (SELECT SUM(`2020`) FROM diagnoses_DE)) * 100 AS Diagnosis_Rate
+    (`2020` / (SELECT SUM(`2020`) FROM diagnoses_US)) * 100 AS Diagnosis_Rate
 FROM diagnoses_US
 UNION ALL
 
