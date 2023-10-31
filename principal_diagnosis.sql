@@ -166,7 +166,7 @@ ORDER BY `2012` DESC;
 
 ------------
 -- DE data
--- Diagnosis Rate per year among all diagnoses
+-- Diagnosis Rate per year among all diagnoses (wide format)
 SELECT
     ICD_10,
     ICD_10_description,
@@ -184,9 +184,125 @@ SELECT
 FROM
     diagnoses_DE
 WHERE ICD_10 NOT LIKE '%-%-%'
-ORDER BY Diagnosis_Rate_2021 DESC;
+ORDER BY Diagnosis_Rate_2021 DESC
+LIMIT 100;
 
--- Proportion of Diagnoses per 100k people per year
+-- Create a new view to melt the data (long format)
+DROP VIEW IF EXISTS melted_diagnoses_rate_DE;
+
+CREATE VIEW melted_diagnoses_rate_DE AS
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2021' AS Year,
+    `2021` AS Cases,
+    (`2021` / (SELECT `2021` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2020' AS Year,
+    `2020` AS Cases,
+    (`2020` / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2019' AS Year,
+    `2019` AS Cases,
+    (`2019` / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2018' AS Year,
+    `2018` AS Cases,
+    (`2018` / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2017' AS Year,
+    `2017` AS Cases,
+    (`2017` / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2016' AS Year,
+    `2016` AS Cases,
+    (`2016` / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2015' AS Year,
+    `2015` AS Cases,
+    (`2015` / (SELECT `2015` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2014' AS Year,
+    `2014` AS Cases,
+    (`2014` / (SELECT `2014` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2013' AS Year,
+    `2013` AS Cases,
+    (`2013` / (SELECT `2013` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2012' AS Year,
+    `2012` AS Cases,
+    (`2012` / (SELECT `2012` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%'
+
+ORDER BY Year, ICD_10;
+
+WITH RankedData AS (
+    SELECT
+        ICD_10,
+        ICD_10_description,
+        Year,
+        Cases,
+        Diagnosis_Rate,
+        ROW_NUMBER() OVER (PARTITION BY Year ORDER BY Cases DESC) AS RowNum
+    FROM melted_diagnoses_rate_DE
+)
+SELECT
+    ICD_10,
+    ICD_10_description,
+    Year,
+    Cases,
+    Diagnosis_Rate
+FROM RankedData
+WHERE RowNum <= 100;
+
+-- Proportion of Diagnoses per 100k people per year (wide format)
 SELECT
     d.ICD_10,
     d.ICD_10_description,
@@ -226,7 +342,139 @@ JOIN
 WHERE ICD_10 NOT LIKE '%-%-%'
 ORDER BY Cases_per_100k_2021 DESC;
 
+-- Create a view to melt the data (long format)
+DROP VIEW IF EXISTS melted_diagnoses_per_100k_DE;
 
+CREATE VIEW melted_diagnoses_per_100k_DE AS
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2021' AS Year,
+    d.`2021` AS Cases,
+    (d.`2021` / p2021.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_DE d
+JOIN population_DE p2021 ON p2021.Year = 2021
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2020' AS Year,
+    d.`2020` AS Cases,
+    (d.`2020` / p2020.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_DE d
+JOIN population_DE p2020 ON p2020.Year = 2020
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2019' AS Year,
+    d.`2019` AS Cases,
+    (d.`2019` / p2019.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_DE d
+JOIN population_DE p2019 ON p2019.Year = 2019
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2018' AS Year,
+    d.`2018` AS Cases,
+    (d.`2018` / p2018.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_DE d
+JOIN population_DE p2018 ON p2018.Year = 2018
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2017' AS Year,
+    d.`2017` AS Cases,
+    (d.`2017` / p2017.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_DE d
+JOIN population_DE p2017 ON p2017.Year = 2017
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2016' AS Year,
+    d.`2016` AS Cases,
+    (d.`2016` / p2016.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_DE d
+JOIN population_DE p2016 ON p2016.Year = 2016
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2015' AS Year,
+    d.`2015` AS Cases,
+    (d.`2015` / p2015.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_DE d
+JOIN population_DE p2015 ON p2015.Year = 2015
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2014' AS Year,
+    d.`2014` AS Cases,
+    (d.`2014` / p2014.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_DE d
+JOIN population_DE p2014 ON p2014.Year = 2014
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2013' AS Year,
+    d.`2013` AS Cases,
+    (d.`2013` / p2013.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_DE d
+JOIN population_DE p2013 ON p2013.Year = 2013
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2012' AS Year,
+    d.`2012` AS Cases,
+    (d.`2012` / p2012.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_DE d
+JOIN population_DE p2012 ON p2012.Year = 2012
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+
+ORDER BY Year, Cases_per_100k DESC;
+
+WITH RankedData AS (
+    SELECT
+        ICD_10,
+        ICD_10_description,
+        Year,
+        Cases,
+        Cases_per_100k,
+        ROW_NUMBER() OVER (PARTITION BY Year ORDER BY Cases DESC) AS RowNum
+    FROM melted_diagnoses_per_100k_DE
+)
+SELECT
+    ICD_10,
+    ICD_10_description,
+    Year,
+    Cases,
+    Cases_per_100k
+FROM RankedData
+WHERE RowNum <= 100;
 
 -- Select diagnoses that increased the most from 2012 to 2021 in relation to the population
 SELECT
@@ -262,7 +510,7 @@ WHERE D.2020 > D.2016 AND ICD_10 LIKE '%-%-%'
 ORDER BY Percentage_Increase_Relative_to_Population DESC;
 
 -- US DATA
--- Diagnosis Rate per year among all diagnoses
+-- Diagnosis Rate per year among all diagnoses (wide format)
 SELECT
     ICD_10,
     ICD_10_description,
@@ -276,6 +524,79 @@ FROM
     diagnoses_US
 ORDER BY Percentage2020 DESC;
 
+-- Create a view to melt the data (long format)
+DROP VIEW IF EXISTS melted_diagnoses_rate_US;
+
+CREATE VIEW melted_diagnoses_rate_US AS
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2020' AS Year,
+    `2020` AS Cases,
+    (`2020` / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_US
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2019' AS Year,
+    `2019` AS Cases,
+    (`2019` / (SELECT `2019` FROM diagnoses_US WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_US
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2018' AS Year,
+    `2018` AS Cases,
+    (`2018` / (SELECT `2018` FROM diagnoses_US WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_US
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2017' AS Year,
+    `2017` AS Cases,
+    (`2017` / (SELECT `2017` FROM diagnoses_US WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_US
+WHERE ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    ICD_10,
+    ICD_10_description,
+    '2016' AS Year,
+    `2016` AS Cases,
+    (`2016` / (SELECT `2016` FROM diagnoses_US WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+FROM diagnoses_US
+WHERE ICD_10 NOT LIKE '%-%-%'
+
+ORDER BY Year, ICD_10;
+
+WITH RankedData AS (
+    SELECT
+        ICD_10,
+        ICD_10_description,
+        Year,
+        Cases,
+        Diagnosis_Rate,
+        ROW_NUMBER() OVER (PARTITION BY Year ORDER BY Cases DESC) AS RowNum
+    FROM melted_diagnoses_rate_US
+)
+SELECT
+    ICD_10,
+    ICD_10_description,
+    Year,
+    Cases,
+    Diagnosis_Rate
+FROM RankedData
+WHERE RowNum <= 100;
 
 -- Proportion of Diagnoses per 100k people per year
 SELECT
@@ -301,6 +622,86 @@ JOIN
     population_US AS P2016 ON P2016.Year = 2016 
 ORDER BY Cases_per_100k_2020 DESC;
 
+-- Create a view to melt the data
+DROP VIEW IF EXISTS melted_diagnoses_per_100k_US;
+
+CREATE VIEW melted_diagnoses_per_100k_US AS
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2020' AS Year,
+    d.`2020` AS Cases,
+    (d.`2020` / p2020.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_US d
+JOIN population_DE p2020 ON p2020.Year = 2020
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2019' AS Year,
+    d.`2019` AS Cases,
+    (d.`2019` / p2019.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_US d
+JOIN population_DE p2019 ON p2019.Year = 2019
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2018' AS Year,
+    d.`2018` AS Cases,
+    (d.`2018` / p2018.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_US d
+JOIN population_DE p2018 ON p2018.Year = 2018
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2017' AS Year,
+    d.`2017` AS Cases,
+    (d.`2017` / p2017.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_US d
+JOIN population_DE p2017 ON p2017.Year = 2017
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+UNION ALL
+
+SELECT
+    d.ICD_10,
+    d.ICD_10_description,
+    '2016' AS Year,
+    d.`2016` AS Cases,
+    (d.`2016` / p2016.Population) * 100000 AS Cases_per_100k
+FROM diagnoses_US d
+JOIN population_DE p2016 ON p2016.Year = 2016
+WHERE d.ICD_10 NOT LIKE '%-%-%'
+
+ORDER BY Year, Cases_per_100k DESC;
+
+WITH RankedData AS (
+    SELECT
+        ICD_10,
+        ICD_10_description,
+        Year,
+        Cases,
+        Cases_per_100k,
+        ROW_NUMBER() OVER (PARTITION BY Year ORDER BY Cases DESC) AS RowNum
+    FROM melted_diagnoses_per_100k_US
+)
+SELECT
+    ICD_10,
+    ICD_10_description,
+    Year,
+    Cases,
+    Cases_per_100k
+FROM RankedData
+WHERE RowNum <= 100;
+
+
 -- Select diagnoses that increased the most from 2016 to 2020 in relation to the population
 SELECT
     D.ICD_10,
@@ -310,161 +711,579 @@ FROM diagnoses_US AS D
 JOIN population_US AS P2020 ON P2020.Year = 2020
 JOIN population_US AS P2016 ON P2016.Year = 2016
 WHERE D.`2020` > D.`2016`
-ORDER BY Percentage_Increase_Relative_to_Population DESC;
+ORDER BY Percentage_Increase_Relative_to_Population DESC
+LIMIT 100;
 
 
 
 -- Zeitlicher Verlauf ausgewählter Erkrankungen
 -- ICD10-E00-E90 Endokrine, Ernährungs- und Stoffwechselkrankheiten
-SELECT 
+-- Create a view to melt the data
+DROP VIEW IF EXISTS melted_endocrine_data;
+
+CREATE VIEW melted_endocrine_data AS
+SELECT
     'Endocrine US' AS Description,
-    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%')/ SUM(`2020`)) * 100 AS Perc_Endocrine_2020,
-    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%')/ SUM(`2019`)) * 100 AS Perc_Endocrine_2019,
-    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%')/ SUM(`2018`)) * 100 AS Perc_Endocrine_2018,
-    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%')/ SUM(`2017`)) * 100 AS Perc_Endocrine_2017,
-    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%')/ SUM(`2016`)) * 100 AS Perc_Endocrine_2016
-FROM
-    diagnoses_US
-UNION
-SELECT 
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%' AND Year = 2020) / (SELECT SUM(`2020`) FROM diagnoses_US )) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Endocrine US' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%' AND Year = 2019) / (SELECT SUM(`2019`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Endocrine US' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%' AND Year = 2018) / (SELECT SUM(`2018`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Endocrine US' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%' AND Year = 2017) / (SELECT SUM(`2017`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Endocrine US' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'E%' AND Year = 2016) / (SELECT SUM(`2016`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
     'Endocrine DE' AS Description,
-    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Endocrine_2020,
-    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Endocrine_2019,
-    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Endocrine_2018,
-    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Endocrine_2017,
-    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Endocrine_2016
-FROM
-    diagnoses_DE;
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Endocrine DE' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Endocrine DE' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Endocrine DE' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Endocrine DE' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-E%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage;
+
+SELECT * 
+FROM melted_endocrine_data;
 
 -- Krankheiten des Atmungssystems
-SELECT 
-    'Respiratory diseases US' AS Description,
-    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%')/ SUM(`2020`)) * 100 AS Perc_Respiratory_2020,
-    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%')/ SUM(`2019`)) * 100 AS Perc_Respiratory_2019,
-    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%')/ SUM(`2018`)) * 100 AS Perc_Respiratory_2018,
-    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%')/ SUM(`2017`)) * 100 AS Perc_Respiratory_2017,
-    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%')/ SUM(`2016`)) * 100 AS Perc_Respiratory_2016
-FROM
-    diagnoses_US
-UNION
-SELECT 
-    'Respiratory diseases DE' AS Description,
-    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Respiratory_2020,
-    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Respiratory_2019,
-    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Respiratory_2018,
-    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Respiratory_2017,
-    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Respiratory_2016
-FROM
-    diagnoses_DE;
+-- Create a view to melt the data
+DROP VIEW IF EXISTS melted_respiratory_data;
+
+CREATE VIEW melted_respiratory_data AS
+SELECT
+    'Respiratory US' AS Description,
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%' AND Year = 2020) / (SELECT SUM(`2020`) FROM diagnoses_US )) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Respiratory US' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%' AND Year = 2019) / (SELECT SUM(`2019`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Respiratory US' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%' AND Year = 2018) / (SELECT SUM(`2018`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Respiratory US' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%' AND Year = 2017) / (SELECT SUM(`2017`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Respiratory US' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'J%' AND Year = 2016) / (SELECT SUM(`2016`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Respiratory DE' AS Description,
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Respiratory DE' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Respiratory DE' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Respiratory DE' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Respiratory DE' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage;
+
+SELECT * 
+FROM melted_respiratory_data;
 
 -- Krankheiten des Kreislaufsystems
+-- Create a view to melt the data
+DROP VIEW IF EXISTS melted_circulatory_data;
 
-SELECT 
-    'Circulatory system US' AS Description,
-    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%')/ SUM(`2020`)) * 100 AS Perc_Circulatory_2020,
-    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%')/ SUM(`2019`)) * 100 AS Perc_Circulatory_2019,
-    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%')/ SUM(`2018`)) * 100 AS Perc_Circulatory_2018,
-    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%')/ SUM(`2017`)) * 100 AS Perc_Circulatory_2017,
-    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%')/ SUM(`2016`)) * 100 AS Perc_Circulatory_2016
-FROM
-    diagnoses_US
-UNION
-SELECT 
-    'Circulatory system DE' AS Description,
-    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Circulatory_2020,
-    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Circulatory_2019,
-    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Circulatory_2018,
-    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Circulatory_2017,
-    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Circulatory_2016
-FROM
-    diagnoses_DE;
+CREATE VIEW melted_circulatory_data AS
+SELECT
+    'Circulatory US' AS Description,
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%' AND Year = 2020) / (SELECT SUM(`2020`) FROM diagnoses_US )) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Circulatory US' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%' AND Year = 2019) / (SELECT SUM(`2019`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Circulatory US' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%' AND Year = 2018) / (SELECT SUM(`2018`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Circulatory US' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%' AND Year = 2017) / (SELECT SUM(`2017`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Circulatory US' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'I%' AND Year = 2016) / (SELECT SUM(`2016`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Circulatory DE' AS Description,
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Circulatory DE' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Circulatory DE' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Circulatory DE' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Circulatory DE' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-I%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage;
 
+SELECT * 
+FROM melted_circulatory_data;
 
 -- Psychische und Verhaltensstörungen
-SELECT 
-    'Mental Disorders US' AS Description,
-    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%')/ SUM(`2020`)) * 100 AS Perc_Mental_2020,
-    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%')/ SUM(`2019`)) * 100 AS Perc_Mental_2019,
-    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%')/ SUM(`2018`)) * 100 AS Perc_Mental_2018,
-    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%')/ SUM(`2017`)) * 100 AS Perc_Mental_2017,
-    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%')/ SUM(`2016`)) * 100 AS Perc_Mental_2016
-FROM
-    diagnoses_US
-UNION
-SELECT 
-    'Mental Disorders DE' AS Description,
-    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Mental_2020,
-    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Mental_2019,
-    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Mental_2018,
-    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Mental_2017,
-    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Mental_2016
-FROM
-    diagnoses_DE;
+-- Create a view to melt the data
+DROP VIEW IF EXISTS melted_mental_data;
+
+CREATE VIEW melted_mental_data AS
+SELECT
+    'Mental US' AS Description,
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%' AND Year = 2020) / (SELECT SUM(`2020`) FROM diagnoses_US )) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Mental US' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%' AND Year = 2019) / (SELECT SUM(`2019`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Mental US' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%' AND Year = 2018) / (SELECT SUM(`2018`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Mental US' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%' AND Year = 2017) / (SELECT SUM(`2017`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Mental US' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'F%' AND Year = 2016) / (SELECT SUM(`2016`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Mental DE' AS Description,
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Mental DE' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Mental DE' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Mental DE' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Mental DE' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-F%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage;
+
+SELECT * 
+FROM melted_mental_data;
 
 -- Schwangerschaft, Geburt und Wochenbett
-SELECT 
-    'Pregnancy US' AS Description,
-    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%')/ SUM(`2020`)) * 100 AS Perc_Pregnancy_2020,
-    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%')/ SUM(`2019`)) * 100 AS Perc_Pregnancy_2019,
-    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%')/ SUM(`2018`)) * 100 AS Perc_Pregnancy_2018,
-    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%')/ SUM(`2017`)) * 100 AS Perc_Pregnancy_2017,
-    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%')/ SUM(`2016`)) * 100 AS Perc_Pregnancy_2016
-FROM
-    diagnoses_US
-UNION
-SELECT 
-    'Pregnancy DE' AS Description,
-    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Pregnancy_2020,
-    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Pregnancy_2019,
-    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Pregnancy_2018,
-    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Pregnancy_2017,
-    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Pregnancy_2016
-FROM
-    diagnoses_DE;
+-- Create a view to melt the data
+DROP VIEW IF EXISTS melted_gyn_data;
 
+CREATE VIEW melted_gyn_data AS
+SELECT
+    'Gynaecology US' AS Description,
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%' AND Year = 2020) / (SELECT SUM(`2020`) FROM diagnoses_US )) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Gynaecology US' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%' AND Year = 2019) / (SELECT SUM(`2019`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Gynaecology US' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%' AND Year = 2018) / (SELECT SUM(`2018`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Gynaecology US' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%' AND Year = 2017) / (SELECT SUM(`2017`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Gynaecology US' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'O%' AND Year = 2016) / (SELECT SUM(`2016`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Gynaecology DE' AS Description,
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Gynaecology DE' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Gynaecology DE' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Gynaecology DE' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'Gynaecology DE' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-O%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage;
+
+SELECT * 
+FROM melted_gyn_data;
 
 -- ICD10-Z00-Z99 Faktoren,die zur Inanspruchn.d.Gesundheitsw.führen
-SELECT 
-    'Z-codes US' AS Description,
-    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%')/ SUM(`2020`)) * 100 AS Perc_Z_Code_2020,
-    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%')/ SUM(`2019`)) * 100 AS Perc_Z_Code_2019,
-    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%')/ SUM(`2018`)) * 100 AS Perc_Z_Code_2018,
-    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%')/ SUM(`2017`)) * 100 AS Perc_Z_Code_2017,
-    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%')/ SUM(`2016`)) * 100 AS Perc_Z_Code_2016
-FROM
-    diagnoses_US
-UNION
-SELECT 
-    'Z-codes DE' AS Description,
-    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Z_Code_2020,
-    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Z_Code_2019,
-    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Z_Code_2018,
-    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Z_Code_2017,
-    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_Z_Code_2016
-FROM
-    diagnoses_DE;
+-- Create a view to melt the data
+DROP VIEW IF EXISTS melted_z_codes_data;
 
+CREATE VIEW melted_z_codes_data AS
+SELECT
+    'z_codes US' AS Description,
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%' AND Year = 2020) / (SELECT SUM(`2020`) FROM diagnoses_US )) * 100 AS Percentage
+UNION ALL
+SELECT
+    'z_codes US' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%' AND Year = 2019) / (SELECT SUM(`2019`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'z_codes US' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%' AND Year = 2018) / (SELECT SUM(`2018`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'z_codes US' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%' AND Year = 2017) / (SELECT SUM(`2017`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'z_codes US' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'Z%' AND Year = 2016) / (SELECT SUM(`2016`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'z_codes DE' AS Description,
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'z_codes DE' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'z_codes DE' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'z_codes DE' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'z_codes DE' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-Z%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage;
+
+SELECT * 
+FROM melted_z_codes_data;
 
 
 -- ICD10-U00-U85 Schlüsselnummern für besondere Zwecke
 -- ICD10-U00-U49 Vorl.Zuord. f. Kh. m.unkl.Ätiologie u.n.b.Schl-Nr.
 
-SELECT 
+-- Create a view to melt the data
+DROP VIEW IF EXISTS melted_unknown_data;
+
+CREATE VIEW melted_unknown_data AS
+SELECT
     'unknown US' AS Description,
-    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2020`)) * 100 AS Perc_unknown_2020,
-    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2019`)) * 100 AS Perc_unknown_2019,
-    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2018`)) * 100 AS Perc_unknown_2018,
-    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2017`)) * 100 AS Perc_unknown_2017,
-    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2016`)) * 100 AS Perc_unknown_2016
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%' AND Year = 2020) / (SELECT SUM(`2020`) FROM diagnoses_US )) * 100 AS Percentage
+UNION ALL
+SELECT
+    'unknown US' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%' AND Year = 2019) / (SELECT SUM(`2019`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'unknown US' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%' AND Year = 2018) / (SELECT SUM(`2018`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'unknown US' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%' AND Year = 2017) / (SELECT SUM(`2017`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'unknown US' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%' AND Year = 2016) / (SELECT SUM(`2016`) FROM diagnoses_US)) * 100 AS Percentage
+UNION ALL
+SELECT
+    'unknown DE' AS Description,
+    2020 AS Year,
+    ((SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'unknown DE' AS Description,
+    2019 AS Year,
+    ((SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'unknown DE' AS Description,
+    2018 AS Year,
+    ((SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'unknown DE' AS Description,
+    2017 AS Year,
+    ((SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage
+UNION ALL
+SELECT
+    'unknown DE' AS Description,
+    2016 AS Year,
+    ((SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Percentage;
+
+SELECT * 
+FROM melted_unknown_data;
+
+-----
+-- README section
+-- Covid-19
+SELECT 
+    'Germany' AS Country,
+    'U71' AS ICD_10,
+    'Covid-19' AS ICD_10_description,
+    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2020',
+    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2019',
+    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2018',
+    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2017',
+    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2016'
+FROM
+    diagnoses_DE
+UNION
+SELECT 
+    'USA' AS Country,
+    'U71' AS ICD_10,
+    'Covid-19' AS ICD_10_description,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2020`)) * 100 ,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2019`)) * 100 ,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2018`)) * 100 ,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2017`)) * 100 ,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE 'U%')/ SUM(`2016`)) * 100 
 FROM
     diagnoses_US
 UNION
 SELECT 
-    'unknown DE' AS Description,
-    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_unknown_2020,
-    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_unknown_2019,
-    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_unknown_2018,
-    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_unknown_2017,
-    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE 'ICD10-U%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS Perc_unknown_2016
+    'Germany' AS Country,
+    'U4' AS ICD_10,
+    'Severe acute respiratory syndrome [SARS]' AS ICD_10_description,
+    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE '%U4%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2020',
+    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE '%U4%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2019',
+    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE '%U4%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2018',
+    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE '%U4%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2017',
+    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE '%U4%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2016'
 FROM
-    diagnoses_DE;
+    diagnoses_DE
+UNION
+SELECT 
+    'USA' AS Country,
+    'U4' AS ICD_10,
+    'Severe acute respiratory syndrome [SARS]' AS ICD_10_description,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE '%U4%')/ SUM(`2020`)) * 100 ,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE '%U4%')/ SUM(`2019`)) * 100 ,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE '%U4%')/ SUM(`2018`)) * 100 ,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE '%U4%')/ SUM(`2017`)) * 100 ,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE '%U4%')/ SUM(`2016`)) * 100 
+FROM
+    diagnoses_US
+UNION
+SELECT 
+    'Germany' AS Country,
+    'J00-J99' AS ICD_10,
+    'Diseases of the respiratory system' AS ICD_10_description,
+    (SELECT SUM(`2020`) FROM diagnoses_DE WHERE ICD_10 LIKE '%J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2020',
+    (SELECT SUM(`2019`) FROM diagnoses_DE WHERE ICD_10 LIKE '%J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2019',
+    (SELECT SUM(`2018`) FROM diagnoses_DE WHERE ICD_10 LIKE '%J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2018',
+    (SELECT SUM(`2017`) FROM diagnoses_DE WHERE ICD_10 LIKE '%J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2017',
+    (SELECT SUM(`2016`) FROM diagnoses_DE WHERE ICD_10 LIKE '%J%' AND ICD_10 NOT LIKE '%-%-%') / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt') * 100 AS '2016'
+FROM
+    diagnoses_DE
+UNION
+SELECT 
+    'USA' AS Country,
+    'J00-J99' AS ICD_10,
+    'Diseases of the respiratory system' AS ICD_10_description,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE '%J%')/ SUM(`2020`)) * 100 ,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE '%J%')/ SUM(`2019`)) * 100 ,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE '%J%')/ SUM(`2018`)) * 100 ,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE '%J%')/ SUM(`2017`)) * 100 ,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE '%J%')/ SUM(`2016`)) * 100 
+FROM
+    diagnoses_US
+;
+
+-- ICD10-Z38 Liveborn infants according to place of birth
+SELECT
+    'Germany' AS Country,
+    'Z38' AS ICD_10,
+    'Liveborn infants according to place of birth' AS ICD_10_description,
+    (`2020` / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2020',
+    (`2019` / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2019',
+    (`2018` / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2018',
+    (`2017` / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2017',
+    (`2016` / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2016'
+FROM
+    diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%' AND ICD_10 LIKE '%-Z38%'
+UNION
+SELECT
+    'USA' AS Country,
+    'Z38' AS ICD_10,
+    'Liveborn infants according to place of birth' AS ICD_10_description,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE '%Z38%')/ SUM(`2020`)) * 100 ,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE '%Z38%')/ SUM(`2019`)) * 100 ,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE '%Z38%')/ SUM(`2018`)) * 100 ,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE '%Z38%')/ SUM(`2017`)) * 100 ,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE '%Z38%')/ SUM(`2016`)) * 100 
+FROM
+    diagnoses_US ;
+
+-- ICD10-A41	   Sonstige Sepsis    
+SELECT
+    'Germany' AS Country,
+    'A41' ICD_10,
+    'Other sepsis' AS ICD_10_description,
+    (`2020` / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2020',
+    (`2019` / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2019',
+    (`2018` / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2018',
+    (`2017` / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2017',
+    (`2016` / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2016'
+FROM
+    diagnoses_DE
+WHERE ICD_10 NOT LIKE '%-%-%' AND ICD_10 LIKE '%-A41%'
+UNION
+SELECT
+    'USA' AS Country,
+    'A41' ICD_10,
+    'Other sepsis' AS ICD_10_description,
+    ((SELECT SUM(`2020`) FROM diagnoses_US WHERE ICD_10 LIKE '%A41%')/ SUM(`2020`)) * 100 ,
+    ((SELECT SUM(`2019`) FROM diagnoses_US WHERE ICD_10 LIKE '%A41%')/ SUM(`2019`)) * 100 ,
+    ((SELECT SUM(`2018`) FROM diagnoses_US WHERE ICD_10 LIKE '%A41%')/ SUM(`2018`)) * 100 ,
+    ((SELECT SUM(`2017`) FROM diagnoses_US WHERE ICD_10 LIKE '%A41%')/ SUM(`2017`)) * 100 ,
+    ((SELECT SUM(`2016`) FROM diagnoses_US WHERE ICD_10 LIKE '%A41%')/ SUM(`2016`)) * 100 
+FROM
+    diagnoses_US ;
+
+
+-- ICD10-E10-E14 Diabetes mellitus
+SELECT
+    'Germany' AS Country,
+    'E10-E14' ICD_10,
+    'Diabetes Mellitus' AS ICD_10_description,
+    (`2020` / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2020',
+    (`2019` / (SELECT `2019` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2019',
+    (`2018` / (SELECT `2018` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2018',
+    (`2017` / (SELECT `2017` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2017',
+    (`2016` / (SELECT `2016` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS '2016'
+FROM
+    diagnoses_DE
+WHERE  ICD_10 LIKE '%E10-E14%'
+UNION
+SELECT
+    'USA' AS Country,
+    'E10-E14' ICD_10,
+    'Diabetes Mellitus' AS ICD_10_description,
+    SUM(`2020`) / (SELECT SUM(`2020`) FROM diagnoses_US) * 100 AS Percentage2020,
+    SUM(`2019`) / (SELECT SUM(`2019`) FROM diagnoses_US) * 100 AS Percentage2019,
+    SUM(`2018`) / (SELECT SUM(`2018`) FROM diagnoses_US) * 100 AS Percentage2018,
+    SUM(`2017`) / (SELECT SUM(`2017`) FROM diagnoses_US) * 100 AS Percentage2017,
+    SUM(`2016`) / (SELECT SUM(`2016`) FROM diagnoses_US) * 100 AS Percentage2016
+FROM
+    diagnoses_US
+WHERE ICD_10 LIKE '%E10%' 
+OR ICD_10 LIKE '%E11%' 
+OR ICD_10 LIKE '%E12%' 
+OR ICD_10 LIKE '%E13%' 
+OR ICD_10 LIKE '%E14%';
+
+
