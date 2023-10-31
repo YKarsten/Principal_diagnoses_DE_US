@@ -1,0 +1,7 @@
+2016,2017,2018,2019,2020,Country,ICD_10,ICD_10_description
+0.0001,0.0002,0.0002,0.0002,0.0012,Germany,U71,Covid-19
+"","","","",3.2981,USA,U71,Covid-19
+"","","","","",Germany,U4,Severe acute respiratory syndrome [SARS]
+"","","","","",USA,U4,Severe acute respiratory syndrome [SARS]
+6.3333,6.5231,6.6136,6.4538,6.0521,Germany,J00-J99,Diseases of the respiratory system
+7.8105,7.9464,7.8383,7.6067,5.9028,USA,J00-J99,Diseases of the respiratory system
