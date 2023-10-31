@@ -25,7 +25,7 @@ CREATE TABLE
     );
 
 -- Load data from CSV
-LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\23131-0001_$F.csv' INTO TABLE diagnoses_DE
+LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\src\\23131-0001_$F.csv' INTO TABLE diagnoses_DE
 FIELDS TERMINATED BY ';' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 7 ROWS (
     ICD_10,
     @ICD_10_description,
@@ -67,7 +67,7 @@ CREATE TABLE population_DE(
 );
 
 -- Load data from CSV
-LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\DE_population.csv' INTO TABLE population_DE
+LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\src\\DE_population.csv' INTO TABLE population_DE
 FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS (
     `Year`,
     @population
@@ -91,7 +91,7 @@ CREATE TABLE diagnoses_US (
 );
 
 -- Load data from CSV, skipping the first 4 lines (metadata and headers)
-LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\HCUP-NIS2016-2020-DXandPRfreqs.csv' INTO TABLE diagnoses_US
+LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\src\\HCUP-NIS2016-2020-DXandPRfreqs.csv' INTO TABLE diagnoses_US
 FIELDS TERMINATED BY '\t' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 8 LINES (
     ICD_10,
     ICD_10_description,
@@ -135,7 +135,7 @@ CREATE TABLE population_US (
 );
 
 -- Load data from CSV
-LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\NST-EST2020.csv' INTO TABLE population_US
+LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.1\\Uploads\\src\\NST-EST2020.csv' INTO TABLE population_US
 FIELDS TERMINATED BY ';' LINES TERMINATED BY '\n' IGNORE 1 ROWS (
     `Year`,
     @Population
@@ -533,9 +533,8 @@ SELECT
     ICD_10_description,
     '2020' AS Year,
     `2020` AS Cases,
-    (`2020` / (SELECT `2020` FROM diagnoses_DE WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+    (`2020` / (SELECT SUM(`2020`) FROM diagnoses_DE)) * 100 AS Diagnosis_Rate
 FROM diagnoses_US
-WHERE ICD_10 NOT LIKE '%-%-%'
 UNION ALL
 
 SELECT
@@ -543,9 +542,8 @@ SELECT
     ICD_10_description,
     '2019' AS Year,
     `2019` AS Cases,
-    (`2019` / (SELECT `2019` FROM diagnoses_US WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+    (`2019` / (SELECT SUM(`2019`) FROM diagnoses_US)) * 100 AS Diagnosis_Rate
 FROM diagnoses_US
-WHERE ICD_10 NOT LIKE '%-%-%'
 UNION ALL
 
 SELECT
@@ -553,9 +551,8 @@ SELECT
     ICD_10_description,
     '2018' AS Year,
     `2018` AS Cases,
-    (`2018` / (SELECT `2018` FROM diagnoses_US WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+    (`2018` / (SELECT SUM(`2018`) FROM diagnoses_US)) * 100 AS Diagnosis_Rate
 FROM diagnoses_US
-WHERE ICD_10 NOT LIKE '%-%-%'
 UNION ALL
 
 SELECT
@@ -563,9 +560,8 @@ SELECT
     ICD_10_description,
     '2017' AS Year,
     `2017` AS Cases,
-    (`2017` / (SELECT `2017` FROM diagnoses_US WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+    (`2017` / (SELECT SUM(`2017`) FROM diagnoses_US)) * 100 AS Diagnosis_Rate
 FROM diagnoses_US
-WHERE ICD_10 NOT LIKE '%-%-%'
 UNION ALL
 
 SELECT
@@ -573,11 +569,10 @@ SELECT
     ICD_10_description,
     '2016' AS Year,
     `2016` AS Cases,
-    (`2016` / (SELECT `2016` FROM diagnoses_US WHERE ICD_10_description LIKE 'Insgesamt')) * 100 AS Diagnosis_Rate
+    (`2016` / (SELECT SUM(`2016`) FROM diagnoses_US)) * 100 AS Diagnosis_Rate
 FROM diagnoses_US
-WHERE ICD_10 NOT LIKE '%-%-%'
 
-ORDER BY Year, ICD_10;
+ORDER BY Diagnosis_Rate;
 
 WITH RankedData AS (
     SELECT
@@ -633,8 +628,7 @@ SELECT
     d.`2020` AS Cases,
     (d.`2020` / p2020.Population) * 100000 AS Cases_per_100k
 FROM diagnoses_US d
-JOIN population_DE p2020 ON p2020.Year = 2020
-WHERE d.ICD_10 NOT LIKE '%-%-%'
+JOIN population_US p2020 ON p2020.Year = 2020
 UNION ALL
 
 SELECT
@@ -644,8 +638,7 @@ SELECT
     d.`2019` AS Cases,
     (d.`2019` / p2019.Population) * 100000 AS Cases_per_100k
 FROM diagnoses_US d
-JOIN population_DE p2019 ON p2019.Year = 2019
-WHERE d.ICD_10 NOT LIKE '%-%-%'
+JOIN population_US p2019 ON p2019.Year = 2019
 UNION ALL
 
 SELECT
@@ -655,8 +648,7 @@ SELECT
     d.`2018` AS Cases,
     (d.`2018` / p2018.Population) * 100000 AS Cases_per_100k
 FROM diagnoses_US d
-JOIN population_DE p2018 ON p2018.Year = 2018
-WHERE d.ICD_10 NOT LIKE '%-%-%'
+JOIN population_US p2018 ON p2018.Year = 2018
 UNION ALL
 
 SELECT
@@ -666,8 +658,7 @@ SELECT
     d.`2017` AS Cases,
     (d.`2017` / p2017.Population) * 100000 AS Cases_per_100k
 FROM diagnoses_US d
-JOIN population_DE p2017 ON p2017.Year = 2017
-WHERE d.ICD_10 NOT LIKE '%-%-%'
+JOIN population_US p2017 ON p2017.Year = 2017
 UNION ALL
 
 SELECT
@@ -677,8 +668,7 @@ SELECT
     d.`2016` AS Cases,
     (d.`2016` / p2016.Population) * 100000 AS Cases_per_100k
 FROM diagnoses_US d
-JOIN population_DE p2016 ON p2016.Year = 2016
-WHERE d.ICD_10 NOT LIKE '%-%-%'
+JOIN population_US p2016 ON p2016.Year = 2016
 
 ORDER BY Year, Cases_per_100k DESC;
 
@@ -1285,5 +1275,3 @@ OR ICD_10 LIKE '%E11%'
 OR ICD_10 LIKE '%E12%' 
 OR ICD_10 LIKE '%E13%' 
 OR ICD_10 LIKE '%E14%';
-
-
