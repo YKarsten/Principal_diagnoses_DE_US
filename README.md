@@ -77,7 +77,7 @@ Please note that setting up MySQL and running these queries may require some lev
 ![Principal Diagnoses Dashboard DE & US v1](output/Principal_Diagnosis_Dashboard_v1.png)
 *Figure 1: Principal Diagnoses Comparison (2012-2021 for Germany, 2016-2020 for the USA)*
 
-For an interactive version of this dashboard, please visit public.tableau.com.
+For an interactive version of this dashboard, please visit [public.tableau.com](https://public.tableau.com/app/profile/yannik.karsten/viz/principalDiagnosis/Dashboard1#1).
 
 Figure 1 showcases a Tableau Dashboard, providing a comprehensive visual representation of key findings and disparities within the two datasets. Notably, the data spans different time periods, covering 2012-2021 for Germany and 2016-2020 for the USA.
 
