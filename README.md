@@ -60,7 +60,12 @@ This section covers the key steps involved in both data analysis and setting up 
 
 3. **SQL Queries**: The SQL queries used in this analysis are available in the [project's code repository](principal_diagnosis.sql). You can run these queries against your MySQL database to extract and transform the data.
 
-4. **View Creation (WIP)**: To visualize the data in Tableau, you can create views based on the SQL queries you've executed. Please note that this part is a work in progress.
+4. **View Creation**: To visualize the data in Tableau, you can create views based on the SQL queries. You can find the views I generated [here](views)
+
+5. **Data Transformation**: It's important to mention that for proper interpretation by Tableau, the initial queries or default data format needed to be transformed into a long format (unpivot). This transformation was done to enable more effective data visualization and analysis.
+
+6. **Creating Views for Visualization**: To facilitate data visualization, I have created specific views that align with the long format data structure. These views are optimized for use with Tableau and provide a streamlined way to generate insightful visualizations based on the data.
+
 
 The project involves a comparative analysis of hospital discharge data from Germany and the United States over a ten-year period, from 2012 to 2021. The primary objective is to gain insights into the principal diagnoses recorded in hospitals in these two countries and understand any significant trends or variations in healthcare utilization.
 
@@ -68,6 +73,12 @@ Please note that setting up MySQL and running these queries may require some lev
 
  
 ## Findings
+
+![Principal Diagnoses Dashboard DE & US v1]([output/Principal Diagnosis Dashboard v1.png](https://github.com/YKarsten/Principal_diagnoses_DE_US/blob/main/output/Principal%20Diagnosis%20Dashboard%20v1.png))
+*Figure 1: Principal Diagnoses Germany & USA 2012-2021*
+
+Figure 1 shows a Tableau Dashsboard illustrating the major findings and differences between the 2 datasets. The timespan for Germany and USA data is different (2012-2021 & 2016-2020). In the US a lesser proportion of the population gets discharged from the hospital in the datas timeframe. In Germany its ~20-25k per 100k. In the US its only ~10k. In the US 
+
 **Covid-19:**
 As part of my analysis, it's essential to acknowledge the unique nature of COVID-19 and its impact on healthcare data collection. When the COVID-19 pandemic began, there was no specific ICD-10 code in place to identify this new disease. As a result, COVID-19-related data was initially dispersed among different placeholder codes and diagnostic groups, such as pneumonia.
 
