@@ -74,10 +74,26 @@ Please note that setting up MySQL and running these queries may require some lev
  
 ## Findings
 
-![Principal Diagnoses Dashboard DE & US v1]([output/Principal Diagnosis Dashboard v1.png](https://github.com/YKarsten/Principal_diagnoses_DE_US/blob/main/output/Principal%20Diagnosis%20Dashboard%20v1.png))
-*Figure 1: Principal Diagnoses Germany & USA 2012-2021*
+![Principal Diagnoses Dashboard DE & US v1](output/Principal_Diagnosis_Dashboard_v1.png)
+*Figure 1: Principal Diagnoses Comparison (2012-2021 for Germany, 2016-2020 for the USA)*
 
-Figure 1 shows a Tableau Dashsboard illustrating the major findings and differences between the 2 datasets. The timespan for Germany and USA data is different (2012-2021 & 2016-2020). In the US a lesser proportion of the population gets discharged from the hospital in the datas timeframe. In Germany its ~20-25k per 100k. In the US its only ~10k. In the US 
+For an interactive version of this dashboard, please visit public.tableau.com.
+
+Figure 1 showcases a Tableau Dashboard, providing a comprehensive visual representation of key findings and disparities within the two datasets. Notably, the data spans different time periods, covering 2012-2021 for Germany and 2016-2020 for the USA.
+
+Key Observations:
+
+- Hospital Discharge Rates: The dashboard illustrates that during the specified time frames, the rate of hospital discharges in the USA is notably lower than in Germany. In Germany, approximately 20-25 thousand people per 100,000 population are discharged, while in the USA, this figure is significantly lower, at around 10,000 per 100,000 population.
+
+Diagnoses Disparities:
+
+- USA: In the USA, a prominent feature of the data is the high prevalence of diagnoses related to childbirth (ICD-10 Z-38, indicated in grey and brown). These diagnoses rank as the most common among hospital discharges in the USA.
+Sepsis, a severe infection-related diagnosis, also stands out as a prevalent condition, making it the second most abundant diagnosis in the USA dataset. Notably, sepsis is not among the top 10 diagnoses in Germany.
+- Germany: In contrast, the German dataset primarily features diagnoses related to childbirth, and secondarily to cardiovascular diseases such as heart failure, atrial fibrillation, and Angina Pectoris. Additionally, a significant proportion of hospital discharges in Germany are attributed to mental disorders.
+This dashboard offers valuable insights into the differences in hospital discharge rates and the prevalence of specific diagnoses between the two countries, shedding light on healthcare utilization patterns and public health trends.
+
+--- 
+The dashboard also delves into specific categories of diagnoses, which I'll describe in the following.
 
 **Covid-19:**
 As part of my analysis, it's essential to acknowledge the unique nature of COVID-19 and its impact on healthcare data collection. When the COVID-19 pandemic began, there was no specific ICD-10 code in place to identify this new disease. As a result, COVID-19-related data was initially dispersed among different placeholder codes and diagnostic groups, such as pneumonia.
