@@ -348,8 +348,10 @@ ORDER BY Cases_per_100k_2021 DESC;
 -- Create a view to melt the data (long format)
 DROP VIEW IF EXISTS melted_diagnoses_per_100k_DE;
 
+
 CREATE VIEW melted_diagnoses_per_100k_DE AS
 SELECT
+    'DE' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2021' AS Year,
@@ -358,9 +360,11 @@ SELECT
 FROM diagnoses_DE d
 JOIN population_DE p2021 ON p2021.Year = 2021
 WHERE d.ICD_10 NOT LIKE '%-%-%'
+AND d.ICD_10_description NOT LIKE 'Insgesamt'
 UNION ALL
 
 SELECT
+    'DE' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2020' AS Year,
@@ -372,6 +376,7 @@ WHERE d.ICD_10 NOT LIKE '%-%-%'
 UNION ALL
 
 SELECT
+    'DE' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2019' AS Year,
@@ -383,6 +388,7 @@ WHERE d.ICD_10 NOT LIKE '%-%-%'
 UNION ALL
 
 SELECT
+    'DE' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2018' AS Year,
@@ -394,6 +400,7 @@ WHERE d.ICD_10 NOT LIKE '%-%-%'
 UNION ALL
 
 SELECT
+    'DE' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2017' AS Year,
@@ -405,6 +412,7 @@ WHERE d.ICD_10 NOT LIKE '%-%-%'
 UNION ALL
 
 SELECT
+    'DE' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2016' AS Year,
@@ -416,6 +424,7 @@ WHERE d.ICD_10 NOT LIKE '%-%-%'
 UNION ALL
 
 SELECT
+    'DE' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2015' AS Year,
@@ -427,6 +436,7 @@ WHERE d.ICD_10 NOT LIKE '%-%-%'
 UNION ALL
 
 SELECT
+    'DE' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2014' AS Year,
@@ -438,6 +448,7 @@ WHERE d.ICD_10 NOT LIKE '%-%-%'
 UNION ALL
 
 SELECT
+    'DE' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2013' AS Year,
@@ -449,6 +460,7 @@ WHERE d.ICD_10 NOT LIKE '%-%-%'
 UNION ALL
 
 SELECT
+    'DE' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2012' AS Year,
@@ -633,6 +645,7 @@ DROP VIEW IF EXISTS melted_diagnoses_per_100k_US;
 
 CREATE VIEW melted_diagnoses_per_100k_US AS
 SELECT
+    'US' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2020' AS Year,
@@ -643,6 +656,7 @@ JOIN population_US p2020 ON p2020.Year = 2020
 UNION ALL
 
 SELECT
+    'US' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2019' AS Year,
@@ -653,6 +667,7 @@ JOIN population_US p2019 ON p2019.Year = 2019
 UNION ALL
 
 SELECT
+    'US' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2018' AS Year,
@@ -663,6 +678,7 @@ JOIN population_US p2018 ON p2018.Year = 2018
 UNION ALL
 
 SELECT
+    'US' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2017' AS Year,
@@ -673,6 +689,7 @@ JOIN population_US p2017 ON p2017.Year = 2017
 UNION ALL
 
 SELECT
+    'US' AS Country,
     d.ICD_10,
     d.ICD_10_description,
     '2016' AS Year,
